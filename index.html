@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prepe - Blood (Hematology) Hindi One Page Note</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+    <!-- Required libraries for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Poppins', 'Tiro Devanagari Hindi', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #ffe4d6 100%);
+        }
+        /* Ensure Hindi text looks good */
+        .hindi-text {
+            font-family: 'Tiro Devanagari Hindi', serif;
+        }
+        .scroll-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            gap: 2.5rem; /* 40px */
+            padding: 2.5rem 0;
+            width: 100%;
+            min-height: 100vh;
+            scrollbar-width: none;
+        }
+        .scroll-container::-webkit-scrollbar { display: none; }
+        .slide {
+            flex-shrink: 0;
+            width: 95%; 
+            max-width: 1080px;
+            height: auto;
+            background-color: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            color: #1a202c;
+            position: relative;
+            box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.15);
+            border-radius: 36px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            overflow: hidden;
+            padding: 1.5rem; /* 24px */
+            display: flex;
+            flex-direction: column;
+            background-image: url('data:image/svg+xml;utf8,<svg width="350" height="200" xmlns="http://www.w3.org/2000/svg"><text x="50%" y="50%" font-size="50" font-weight="bold" font-family="Poppins, sans-serif" fill="rgba(0,0,0,0.04)" text-anchor="middle" dominant-baseline="middle" transform="rotate(-30 175 100)">Prepe</text></svg>');
+        }
+        @media (min-width: 640px) {
+            .slide {
+                padding: 2.8125rem; /* 45px */
+            }
+        }
+        .brand-logo {
+            position: absolute;
+            top: 1.5rem; /* 24px */
+            left: 1.5rem; /* 24px */
+            font-size: 2rem; /* 32px */
+            font-weight: 700;
+            color: #f97316;
+            z-index: 1;
+        }
+        @media (min-width: 640px) {
+           .brand-logo {
+                top: 2.8125rem; /* 45px */
+                left: 2.8125rem; /* 45px */
+                font-size: 2.125rem; /* 34px */
+           }
+        }
+        #download-pdf-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-image: linear-gradient(to right, #ea580c 0%, #f97316 51%, #ea580c 100%);
+            background-size: 200% auto;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.4);
+            transition: all 0.3s ease-in-out;
+            z-index: 100;
+            border: none;
+        }
+        @media (min-width: 640px) {
+            #download-pdf-btn {
+                bottom: 30px;
+                right: 30px;
+                padding: 15px 30px;
+                font-size: 1.125rem;
+            }
+        }
+        #download-pdf-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 12px 28px rgba(249, 115, 22, 0.5);
+            background-position: right center;
+        }
+        #loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); display: none; justify-content: center;
+            align-items: center; z-index: 1000; color: white; font-size: 24px;
+            font-weight: 600; backdrop-filter: blur(5px);
+        }
+        .slide-title {
+            font-size: 2rem; /* 32px */
+            font-weight: 700; text-align: center; margin-top: 4rem;
+            margin-bottom: 2rem; color: #1a202c; letter-spacing: -1.5px;
+            position: relative; z-index: 1;
+        }
+        @media (min-width: 640px) {
+            .slide-title {
+                font-size: 2.875rem; /* 46px */
+                margin-top: 3.75rem; /* 60px */
+                margin-bottom: 1.875rem; /* 30px */
+            }
+        }
+        .card {
+             background-color: rgba(255, 255, 255, 0.85);
+             border-radius: 22px; padding: 1.25rem;
+             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
+             border: 1px solid rgba(255, 255, 255, 0.5);
+             display: flex; flex-direction: column;
+             transition: all 0.3s ease-in-out;
+             position: relative; z-index: 1;
+        }
+        .card:not(.mind-map-card):hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        .card-title {
+             font-size: 1.125rem; /* 18px */
+             font-weight: 700; margin-bottom: 0.75rem;
+             padding-bottom: 0.625rem; border-bottom: 1px solid rgba(0,0,0,0.07);
+             display: flex; align-items: center;
+        }
+        @media (min-width: 640px) {
+            .card-title { font-size: 1.25rem; /* 20px */ }
+        }
+        .card-title .icon {
+            margin-right: 0.75rem; font-size: 1.25rem; width: 36px; height: 36px;
+            display: grid; place-items: center; border-radius: 50%;
+            background-color: var(--icon-bg, #fef2e5); color: var(--icon-color, #f97316);
+        }
+        .card-content {
+            font-size: 0.9375rem; /* 15px */
+            line-height: 1.75; flex-grow: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="loader-overlay">
+        <span><i class="fa-solid fa-spinner fa-spin mr-3"></i>Generating PDF...</span>
+    </div>
+
+    <div class="scroll-container">
+        <!-- Slide 1 -->
+        <div id="slide1" class="slide">
+            <div class="brand-logo">Prepe</div>
+            <h1 class="slide-title">🩸 रक्त: एक परिचय (Introduction)</h1>
+            <!-- Desktop Mindmap Layout -->
+            <div class="hidden md:flex flex-grow items-center justify-center">
+                <div class="w-full h-full relative flex items-center justify-center" style="min-height: 700px;">
+                    <svg class="absolute top-0 left-0 w-full h-full z-10" viewbox="0 0 990 990">
+                        <defs><linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#fdbf72;stop-opacity:1" /><stop offset="100%" style="stop-color:#f97316;stop-opacity:1" /></linearGradient></defs>
+                        <line x1="495" y1="495" x2="215" y2="280" stroke="url(#lineGrad)" stroke-width="2.5" /><line x1="495" y1="495" x2="775" y2="280" stroke="url(#lineGrad)" stroke-width="2.5" /><line x1="495" y1="495" x2="111" y2="495" stroke="url(#lineGrad)" stroke-width="2.5" /><line x1="495" y1="495" x2="879" y2="495" stroke="url(#lineGrad)" stroke-width="2.5" /><line x1="495" y1="495" x2="215" y2="710" stroke="url(#lineGrad)" stroke-width="2.5" /><line x1="495" y1="495" x2="775" y2="710" stroke="url(#lineGrad)" stroke-width="2.5" />
+                    </svg>
+                    <div class="absolute w-72 h-72 bg-gradient-to-br from-red-500 to-rose-700 rounded-full flex flex-col items-center justify-center text-white shadow-2xl z-20"><h2 class="text-4xl font-bold">BLOOD</h2><p class="text-xl font-semibold">(रक्त)</p></div>
+                    
+                    <!-- Top Left -->
+                    <div class="card mind-map-card absolute w-64 text-center transform -translate-x-[22rem] -translate-y-52 z-30"><h3 class="card-title justify-center text-base" style="--icon-color: #c2410c; --icon-bg: #fff7ed;"><i class="fa-solid fa-flask icon"></i> परिचय (Properties)</h3><ul class="text-xs list-disc list-inside text-left hindi-text"><li><strong>प्रकार:</strong> यह एक तरल संयोजी ऊतक (Fluid Connective Tissue) है।</li><li><strong>pH:</strong> 7.4 (हल्का क्षारीय/Alkaline)।</li><li><strong>मात्रा:</strong> पुरुषों में 5-6 लीटर, महिलाओं में 4-5 लीटर।</li><li><strong>गाढ़ापन:</strong> पानी से 3-5 गुना ज्यादा भारी।</li></ul></div>
+                    
+                    <!-- Top Right -->
+                    <div class="card mind-map-card absolute w-64 text-center transform translate-x-[22rem] -translate-y-52 z-30"><h3 class="card-title justify-center text-base" style="--icon-color: #be123c; --icon-bg: #fff1f2;"><i class="fa-solid fa-droplet icon"></i> प्लाज्मा (Plasma - 55%)</h3><ul class="text-xs list-disc list-inside text-left hindi-text"><li><strong>पानी:</strong> 90-92% (खून का तरल भाग)।</li><li><strong>प्रोटीन:</strong> Albumin, Globulin, Fibrinogen.</li><li><strong>अन्य:</strong> इसमें भोजन और हारमोंस घुले होते हैं।</li><li><strong>सीरम (Serum):</strong> बिना क्लॉटिंग फैक्टर वाला प्लाज्मा।</li></ul></div>
+                    
+                    <!-- Mid Left -->
+                    <div class="card mind-map-card absolute w-64 text-center transform -translate-x-96 z-30"><h3 class="card-title justify-center text-base" style="--icon-color: #dc2626; --icon-bg: #fef2f2;"><i class="fa-solid fa-dna icon"></i> कोशिकाएं (Cells - 45%)</h3><ul class="text-xs list-disc list-inside text-left hindi-text"><li><strong>RBC:</strong> लाल रक्त कोशिकाएं (O2 ले जाना)।</li><li><strong>WBC:</strong> श्वेत रक्त कोशिकाएं (रक्षा करना)।</li><li><strong>Platelets:</strong> प्लेटलेट्स (खून जमाना)।</li><li><strong>Hematocrit:</strong> खून में RBC का प्रतिशत।</li></ul></div>
+                    
+                    <!-- Mid Right -->
+                    <div class="card mind-map-card absolute w-64 text-center transform translate-x-96 z-30"><h3 class="card-title justify-center text-base" style="--icon-color: #047857; --icon-bg: #ecfdf5;"><i class="fa-solid fa-heart-pulse icon"></i> कार्य (Functions)</h3><ul class="text-xs list-disc list-inside text-left hindi-text"><li><strong>परिवहन:</strong> ऑक्सीजन (O2) और भोजन पहुँचाना।</li><li><strong>सुरक्षा:</strong> बीमारियों से लड़ना (WBC द्वारा)।</li><li><strong>तापमान:</strong> शरीर की गर्मी को बनाए रखना।</li><li><strong>संतुलन:</strong> पानी और pH को बैलेंस करना।</li></ul></div>
+                    
+                    <!-- Bottom Left -->
+                    <div class="card mind-map-card absolute w-64 text-center transform -translate-x-[22rem] translate-y-52 z-30"><h3 class="card-title justify-center text-base" style="--icon-color: #7e22ce; --icon-bg: #f5f3ff;"><i class="fa-solid fa-bone icon"></i> खून का बनना (Hemopoiesis)</h3><ul class="text-xs list-disc list-inside text-left hindi-text"><li><strong>स्थान:</strong> लाल अस्थि मज्जा (Red Bone Marrow)।</li><li><strong>भ्रूण में:</strong> Liver (लिवर) में बनता है।</li><li><strong>जरूरत:</strong> Iron, Vitamin B12, Folic Acid.</li><li><strong>स्टेम सेल:</strong> जिससे सारी सेल्स बनती हैं।</li></ul></div>
+                    
+                    <!-- Bottom Right -->
+                    <div class="card mind-map-card absolute w-64 text-center transform translate-x-[22rem] translate-y-52 z-30"><h3 class="card-title justify-center text-base" style="--icon-color: #ca8a04; --icon-bg: #fefce8;"><i class="fa-solid fa-microscope icon"></i> अध्ययन (Study Facts)</h3><ul class="text-xs list-disc list-inside text-left hindi-text"><li><strong>ब्रांच:</strong> Hematology (हेमेटोलॉजी)।</li><li><strong>कब्रिस्तान:</strong> Spleen (प्लीहा) - यहाँ RBC मरते हैं।</li><li><strong>ब्लड बैंक:</strong> Spleen को ब्लड बैंक भी कहते हैं।</li><li><strong>उपकरण:</strong> माइक्रोस्कोप से जांच होती है।</li></ul></div>
+                </div>
+            </div>
+             <!-- Mobile Vertical Layout -->
+            <div class="md:hidden flex flex-col items-center gap-4">
+                <div class="w-60 h-60 bg-gradient-to-br from-red-500 to-rose-700 rounded-full flex flex-col items-center justify-center text-white shadow-2xl mb-4"><h2 class="text-3xl font-bold">BLOOD</h2><p class="text-xl font-semibold">(रक्त)</p></div>
+                <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="card"><h3 class="card-title" style="--icon-color: #c2410c; --icon-bg: #fff7ed;"><i class="fa-solid fa-flask icon"></i> परिचय (Properties)</h3><ul class="text-sm list-disc list-inside text-left hindi-text"><li>तरल संयोजी ऊतक (Fluid Connective Tissue)।</li><li>pH: 7.4 (हल्का क्षारीय)।</li></ul></div>
+                    <div class="card"><h3 class="card-title" style="--icon-color: #be123c; --icon-bg: #fff1f2;"><i class="fa-solid fa-droplet icon"></i> प्लाज्मा (Plasma - 55%)</h3><ul class="text-sm list-disc list-inside text-left hindi-text"><li>तरल भाग (90% पानी)।</li><li>Serum: प्लाज्मा बिना क्लॉटिंग प्रोटीन के।</li></ul></div>
+                    <div class="card"><h3 class="card-title" style="--icon-color: #dc2626; --icon-bg: #fef2f2;"><i class="fa-solid fa-dna icon"></i> कोशिकाएं (Cells - 45%)</h3><ul class="text-sm list-disc list-inside text-left hindi-text"><li>RBC, WBC और Platelets.</li><li>खून का ठोस भाग।</li></ul></div>
+                    <div class="card"><h3 class="card-title" style="--icon-color: #047857; --icon-bg: #ecfdf5;"><i class="fa-solid fa-heart-pulse icon"></i> कार्य (Functions)</h3><ul class="text-sm list-disc list-inside text-left hindi-text"><li>परिवहन (O2 और पोषक तत्व)।</li><li>सुरक्षा (Immunity)।</li></ul></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2 -->
+        <div id="slide2" class="slide">
+            <div class="brand-logo">Prepe</div>
+            <h1 class="slide-title">🔬 रक्त कोशिकाएं (Blood Cells)</h1>
+            <div class="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="card lg:col-span-3 p-4 md:p-6">
+                    <h3 class="card-title text-gray-700 m-0 pb-4 text-center md:text-left" style="border:none;"><i class="fa-solid fa-chart-simple icon"></i> सामान्य संख्या (Normal Counts)</h3>
+                    <div class="w-full flex-grow space-y-3.5 text-sm font-semibold flex flex-col justify-center hindi-text">
+                        <div class="flex items-center gap-2 md:gap-4"><span class="w-24 md:w-32 text-right font-bold text-xs md:text-sm">RBC (मिलियन)</span><div class="h-5 flex-grow bg-gray-200 rounded-full"><div class="h-5 rounded-full bg-gradient-to-r from-red-400 to-red-600" style="width: 95%;"></div></div><span class="w-16 text-left font-bold text-xs md:text-sm">4.5-5.5 M</span></div>
+                        <div class="flex items-center gap-2 md:gap-4"><span class="w-24 md:w-32 text-right font-bold text-xs md:text-sm">Platelets (लाख)</span><div class="h-5 flex-grow bg-gray-200 rounded-full"><div class="h-5 rounded-full bg-gradient-to-r from-purple-400 to-purple-600" style="width: 60%;"></div></div><span class="w-16 text-left font-bold text-xs md:text-sm">1.5-4.5 L</span></div>
+                        <div class="flex items-center gap-2 md:gap-4"><span class="w-24 md:w-32 text-right font-bold text-xs md:text-sm">WBC (हजार)</span><div class="h-5 flex-grow bg-gray-200 rounded-full"><div class="h-5 rounded-full bg-gradient-to-r from-blue-400 to-blue-600" style="width: 15%;"></div></div><span class="w-16 text-left font-bold text-xs md:text-sm">4-11 K</span></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:col-span-3 gap-6">
+                    <div class="card sm:col-span-2 lg:col-span-1"><h3 class="card-title" style="--icon-color: #dc2626; --icon-bg: #fef2f2;"><i class="fa-solid fa-circle-dot icon"></i> RBC (लाल रक्त कोशिकाएं)</h3><ul class="card-content text-sm space-y-3 pl-2 hindi-text"><li><strong>आकार:</strong> गोल और बीच से चपटी (Biconcave Disc)।</li><li><strong>Hemoglobin:</strong> इसमें Iron (लोहा) होता है जो लाल रंग देता है।</li><li><strong>जीवन काल:</strong> 120 दिन।</li><li><strong>काम:</strong> ऑक्सीजन (O2) ले जाना।</li><li><strong>मृत्यु:</strong> Spleen (प्लीहा) में नष्ट होती हैं।</li></ul></div>
+                    <div class="card sm:col-span-2 lg:col-span-1"><h3 class="card-title" style="--icon-color: #4f46e5; --icon-bg: #eef2ff;"><i class="fa-solid fa-shield-virus icon"></i> WBC (श्वेत रक्त कोशिकाएं)</h3><ul class="card-content text-sm space-y-3 pl-2 hindi-text"><li><strong>परिचय:</strong> ये हमारे शरीर के सैनिक हैं।</li><li><strong>Neutrophil:</strong> बैक्टीरिया को खा जाते हैं।</li><li><strong>Lymphocyte:</strong> वायरस से लड़ते हैं और Antibody बनाते हैं।</li><li><strong>Monocyte:</strong> सबसे बड़ी कोशिका, सफाई करती है।</li><li><strong>खासियत:</strong> ये नसों से बाहर निकल सकती हैं।</li></ul></div>
+                    <div class="card sm:col-span-2 lg:col-span-1"><h3 class="card-title" style="--icon-color: #7e22ce; --icon-bg: #f5f3ff;"><i class="fa-solid fa-layer-group icon"></i> Platelets (प्लेटलेट्स)</h3><div class="card-content space-y-3 text-xs pt-2 hindi-text"><div><h4 class="font-bold text-purple-700">उत्पत्ति (Origin)</h4><p class="mt-1">बोन मैरो की बड़ी कोशिकाओं के टुकड़े हैं।</p></div><div><h4 class="font-bold text-purple-700">मुख्य काम (Function)</h4><p class="mt-1">चोट लगने पर खून को जमाना (Clotting)।</p></div><div><h4 class="font-bold text-purple-700">पहचान</h4><p class="mt-1">इनमें न्यूक्लियस (Nucleus) नहीं होता।</p></div></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div id="slide3" class="slide">
+            <div class="brand-logo">Prepe</div>
+            <h1 class="slide-title">⚙️ खून का जमना और ग्रुप्स</h1>
+            <div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card md:row-span-2"><h3 class="card-title" style="--icon-color: #ea580c; --icon-bg: #fff7ed;"><i class="fa-solid fa-hand-holding-droplet icon"></i> Hemostasis (खून का रुकना)</h3><div class="card-content flex flex-col justify-around text-sm gap-4 hindi-text"><div class="border-b-2 border-dashed border-gray-200 pb-3"><h4 class="font-bold text-lg text-orange-800 flex items-center"><i class="fa-solid fa-1 text-2xl w-8 mr-2"></i> नसों का सिकुड़ना</h4><ul class="mt-2 list-disc list-inside text-left px-2 md:px-4 space-y-1"><li><strong>क्या होता है:</strong> नसें सिकुड़ जाती हैं (Vasoconstriction)।</li><li><strong>क्यों:</strong> ताकि खून का बहाव कम हो सके।</li></ul></div><div class="py-3 border-b-2 border-dashed border-gray-200"><h4 class="font-bold text-lg text-orange-800 flex items-center"><i class="fa-solid fa-2 text-2xl w-8 mr-2"></i> प्लेटलेट प्लग (Platelet Plug)</h4><ul class="mt-2 list-disc list-inside text-left px-2 md:px-4 space-y-1"><li><strong>क्या होता है:</strong> प्लेटलेट्स घाव पर चिपक जाते हैं।</li><li><strong>परिणाम:</strong> एक अस्थाई (Temporary) प्लग बन जाता है।</li></ul></div><div class="pt-3"><h4 class="font-bold text-lg text-orange-800 flex items-center"><i class="fa-solid fa-3 text-2xl w-8 mr-2"></i> रक्त का थक्का (Coagulation)</h4><ul class="mt-2 list-disc list-inside text-left px-2 md:px-4 space-y-1"><li><strong>प्रोसेस:</strong> Fibrinogen नाम का प्रोटीन Fibrin में बदलता है।</li><li><strong>जाल:</strong> एक जाल बनता है जिसमें RBC फंस जाते हैं।</li><li><strong>अंत में:</strong> पक्का थक्का (Clot) बन जाता है।</li></ul></div></div></div>
+                <div class="card"><h3 class="card-title" style="--icon-color: #dc2626; --icon-bg: #fef2f2;"><i class="fa-solid fa-users icon"></i> रक्त समूह (ABO Blood Groups)</h3><ul class="card-content text-sm space-y-2 pl-2 hindi-text"><li><strong>Group A:</strong> इसमें Antigen A होता है।</li><li><strong>Group B:</strong> इसमें Antigen B होता है।</li><li><strong>Group AB:</strong> दोनों Antigen होते हैं (सर्वग्राही / Universal Recipient - सबसे ले सकता है)।</li><li><strong>Group O:</strong> कोई Antigen नहीं होता (सर्वदाता / Universal Donor - सबको दे सकता है)।</li></ul></div>
+                <div class="card"><h3 class="card-title" style="--icon-color: #2563eb; --icon-bg: #eff6ff;"><i class="fa-solid fa-baby icon"></i> Rh Factor (पॉजिटिव/नेगेटिव)</h3><ul class="card-content text-sm space-y-2 pl-2 hindi-text"><li><strong>Rh+:</strong> अगर D-Antigen है, तो ब्लड ग्रुप Positive (+) है।</li><li><strong>Rh-:</strong> अगर D-Antigen नहीं है, तो Negative (-) है।</li><li><strong>ध्यान दें:</strong> 85% लोग Rh+ होते हैं।</li><li><strong>समस्या:</strong> अगर माँ Rh- है और बच्चा Rh+ है, तो दूसरे बच्चे में दिक्कत हो सकती है।</li></ul></div>
+            </div>
+        </div>
+
+        <!-- Slide 4 -->
+        <div id="slide4" class="slide">
+            <div class="brand-logo">Prepe</div>
+            <h1 class="slide-title">⚡ अंतिम रिवीज़न (Revision)</h1>
+            <div class="flex-grow w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                <div class="card"><h3 class="card-title"><i class="fa-solid fa-heart-crack icon"></i> रक्ताल्पता (Anemia)</h3><ul class="card-content text-sm list-disc list-inside space-y-2.5 pl-2 hindi-text"><li><strong>Iron की कमी:</strong> सबसे आम है। हीमोग्लोबिन कम हो जाता है।</li><li><strong>Megaloblastic:</strong> Vitamin B12 की कमी से।</li><li><strong>लक्षण:</strong> थकान, पीलापन और कमजोरी।</li></ul></div>
+                <div class="card"><h3 class="card-title" style="--icon-color: #7c2d12; --icon-bg: #ffedd5;"><i class="fa-solid fa-vial icon"></i> खून की शीशियां (Vials)</h3><ul class="card-content text-sm list-disc list-inside space-y-2.5 pl-2 hindi-text"><li><strong>बैंगनी (EDTA):</strong> CBC टेस्ट के लिए (खून जमता नहीं)।</li><li><strong>नीली (Citrate):</strong> थक्का जमने की जांच (PT/INR) के लिए।</li><li><strong>ग्रे (Fluoride):</strong> शुगर (Glucose) टेस्ट के लिए।</li></ul></div>
+                <div class="card"><h3 class="card-title" style="--icon-color: #9f1239; --icon-bg: #ffe4e6;"><i class="fa-solid fa-triangle-exclamation icon"></i> बीमारियां (Disorders)</h3><ul class="card-content text-sm list-disc list-inside space-y-2.5 pl-2 hindi-text"><li><strong>Leukemia:</strong> ब्लड कैंसर (WBC बहुत बढ़ जाते हैं)।</li><li><strong>Hemophilia:</strong> खून नहीं जमता (शाही बीमारी)।</li><li><strong>Thrombocytopenia:</strong> प्लेटलेट्स कम होना (जैसे डेंगू में)।</li></ul></div>
+                <div class="card"><h3 class="card-title" style="--icon-color: #15803d; --icon-bg: #dcfce7;"><i class="fa-solid fa-list-check icon"></i> याद रखने योग्य (Key Values)</h3><ul class="card-content text-sm list-disc list-inside space-y-2.5 pl-2 hindi-text"><li><strong>Hb (पुरुष):</strong> 14-16 g/dl.</li><li><strong>Hb (महिला):</strong> 12-14 g/dl.</li><li><strong>Bleeding Time:</strong> 2-6 मिनट में खून रुक जाना चाहिए।</li></ul></div>
+                <div class="card"><h3 class="card-title" style="--icon-color: #4338ca; --icon-bg: #e0e7ff;"><i class="fa-solid fa-bacterium icon"></i> WBC के काम</h3><ul class="card-content text-sm list-disc list-inside space-y-2.5 pl-2 hindi-text"><li><strong>Neutrophil:</strong> सबसे पहले हमले पर पहुँचते हैं।</li><li><strong>Monocyte:</strong> मरे हुए कणों को साफ करते हैं।</li><li><strong>Lymphocyte:</strong> याददाश्त रखते हैं (Vaccine इसी पर काम करती है)।</li></ul></div>
+                <div class="card"><h3 class="card-title" style="--icon-color: #b45309; --icon-bg: #fef3c7;"><i class="fa-solid fa-circle-question icon"></i> सामान्य प्रश्न (Viva FAQs)</h3><ul class="card-content text-sm list-disc list-inside space-y-2.5 pl-2 hindi-text"><li><strong>Serum क्या है?</strong> प्लाज्मा में से Fibrinogen निकाल दो।</li><li><strong>RBC कहाँ मरते हैं?</strong> Spleen (प्लीहा) में।</li><li><strong>Tissue कौन सा है?</strong> तरल संयोजी (Fluid Connective)।</li></ul></div>
+                <div class="card sm:col-span-2 lg:col-span-3"><h3 class="card-title text-gray-700" style="--icon-color: #4b5563; --icon-bg: #e5e7eb;"><i class="fa-solid fa-notes-medical icon"></i> याद रखने के तरीके (Mnemonics)</h3><ul class="card-content text-sm list-disc list-inside grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2.5 pl-2 hindi-text"><li><strong>WBC की संख्या:</strong> N-L-M-E-B (Neutrophil सबसे ज्यादा, Basophil सबसे कम)।</li><li><strong>Universal Donor:</strong> O Negative (सबको दे सकता है)।</li><li><strong>Universal Recipient:</strong> AB Positive (सबसे ले सकता है)।</li><li><strong>Vitamin K:</strong> खून जमने के लिए बहुत जरूरी है।</li><li><strong>Heparin:</strong> शरीर के अंदर खून जमने से रोकता है।</li><li><strong>Iron:</strong> हीमोग्लोबिन बनाने के लिए चाहिए।</li></ul></div>
+            </div>
+        </div>
+
+        <!-- Follow Up Section -->
+        <div class="slide">
+             <div class="flex flex-col h-full justify-center items-center text-center p-6 md:p-12 bg-gradient-to-br from-gray-50 to-red-50">
+                <p class="text-xl md:text-2xl font-semibold text-red-600 mb-2 md:mb-4">Master Hematology with Prepe</p>
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-3 md:mb-5"> अपनी तैयारी को नई उड़ान दें!</h2>
+                <p class="text-base md:text-lg text-gray-600 mb-8 md:mb-12">Explore our complete medical & competitive courses.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-8 md:mb-12 w-full max-w-4xl">
+                    <a href="https://offer.prepeai.in" target="_blank" class="block bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 ease-in-out">
+                        <i class="fa-solid fa-tags text-4xl text-green-500 mb-3"></i>
+                        <h3 class="font-bold text-lg text-green-800">FLAT 50% OFF</h3>
+                        <p class="text-sm text-gray-500 mt-1">Limited Time Offer</p>
+                    </a>
+                    <a href="https://shop.prepeai.in" target="_blank" class="block bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 ease-in-out">
+                        <i class="fa-solid fa-layer-group text-4xl text-teal-500 mb-3"></i>
+                        <h3 class="font-bold text-lg text-teal-800">More Notes</h3>
+                        <p class="text-sm text-gray-500 mt-1">Expand Your Knowledge</p>
+                    </a>
+                    <a href="https://instagram.com/prepe.ai" target="_blank" class="block bg-white p-6 rounded-2xl border border-gray-200 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 ease-in-out">
+                        <i class="fab fa-instagram text-4xl text-pink-500 mb-3"></i>
+                        <h3 class="font-bold text-lg text-pink-800">Follow on Instagram</h3>
+                        <p class="text-sm text-gray-500 mt-1">@prepe.ai</p>
+                    </a>
+                </div>
+                <div class="border-t-2 border-dashed border-gray-300 pt-8 md:pt-10 w-full max-w-4xl">
+                    <a href="https://www.prepeai.in" target="_blank" class="inline-block bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-lg md:text-xl py-3 px-8 md:py-4 md:px-10 rounded-full shadow-lg hover:scale-105 transition-transform duration-300">
+                        <i class="fa-solid fa-globe mr-2"></i> Visit Our Website
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <button id="download-pdf-btn">
+        <i class="fa-solid fa-file-pdf mr-2"></i> Download PDF
+    </button>
+
+    <script>
+        const downloadPdfBtn = document.getElementById('download-pdf-btn');
+        const loaderOverlay = document.getElementById('loader-overlay');
+
+        downloadPdfBtn.addEventListener('click', async () => {
+            loaderOverlay.style.display = 'flex';
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'px',
+                format: [1080, 1080]
+            });
+
+            const slides = document.querySelectorAll('.slide');
+            
+            for (let i = 0; i < slides.length; i++) {
+                const slide = slides[i];
+                
+                const canvas = await html2canvas(slide, {
+                    width: 1080,
+                    height: 1080,
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: null, 
+                    logging: false,
+                });
+                
+                const finalCanvas = document.createElement('canvas');
+                finalCanvas.width = canvas.width;
+                finalCanvas.height = canvas.height;
+                const ctx = finalCanvas.getContext('2d');
+                
+                const gradient = ctx.createLinearGradient(0, 0, finalCanvas.width, finalCanvas.height);
+                gradient.addColorStop(0, '#f5f7fa');
+                gradient.addColorStop(1, '#ffe4d6');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+                
+                ctx.drawImage(canvas, 0, 0);
+
+                const imgData = finalCanvas.toDataURL('image/jpeg', 0.9);
+
+                if (i > 0) {
+                    doc.addPage([1080, 1080], 'portrait');
+                }
+                
+                doc.addImage(imgData, 'JPEG', 0, 0, 1080, 1080);
+
+                const links = slide.querySelectorAll('a[href]');
+                if (links.length > 0) {
+                    const originalWidth = slide.offsetWidth;
+                     links.forEach(link => {
+                        const rect = link.getBoundingClientRect();
+                        const slideRect = slide.getBoundingClientRect();
+                        
+                        // Scale factor to convert screen pixels to PDF points
+                        const scaleX = 1080 / slide.offsetWidth;
+                        
+                        // We need the bounding box relative to the slide
+                        const x = rect.left - slideRect.left;
+                        const y = rect.top - slideRect.top;
+                        
+                        doc.link(x * scaleX, y * scaleX, rect.width * scaleX, rect.height * scaleX, { url: link.href });
+                    });
+                }
+            }
+
+            doc.save('Prepe-Blood-Hematology-Hindi.pdf');
+            loaderOverlay.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
